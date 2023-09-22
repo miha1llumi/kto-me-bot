@@ -1,1 +1,3 @@
-# kto_me_bot
+Requirement:
+Python 3.9+
+
