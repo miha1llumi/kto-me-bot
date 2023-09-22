@@ -1,7 +1,9 @@
-Requirement:
+Requirement: Python 3.9+
 
-Python 3.9+
+How to download?
 
-Download
+git clone https://github.com/miha1llumi/kto_me_bot.git
 
-git clone
+cd kto_me_bot
+
+python -m kto_me.py
