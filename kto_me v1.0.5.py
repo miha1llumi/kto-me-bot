@@ -1,0 +1,1113 @@
+# kto_me v1.0.5
+import os
+from time import sleep
+from string import digits, ascii_letters
+from datetime import datetime, timedelta
+
+LOLZ_LINK = "https://zelenka.guru/members/4245200/"
+
+# ffmpeg to complete recaptcha
+try:
+    import ffmpeg_downloader
+except ImportError:
+    os.system("pip install ffmpeg-downloader")
+    os.system("ffdl install --add-path")
+    print(
+        "Пожалуйста, перезапустите скрипт, чтобы соответствующие изменения вступили в силу."
+    )
+    while True:
+        pass
+finally:
+    if not os.path.exists(file := "./useless_phrases.txt"):
+        with open(file, "a") as f:
+            f.write(
+                "пх" + "\n" + "ааа" + "\n"
+            )
+    if not os.path.exists(file := "./bd_of_nicks.txt"):
+        with open(file, "a") as f:
+            pass
+    if not os.path.exists(file := "./qst_ans.txt"):
+        with open(file, "a") as f:
+            f.write(f"Какой лолз у создателя?  |  {LOLZ_LINK}" + "\n")
+    if not os.path.exists(file := "./kto_settings.txt"):
+        print(
+            "У вас отсутствует(или перемещен, верните его!) файл {}!\n"
+            "Файл используется для установки нужных параметров, {}\n"
+            "Будьте внимательны, если мы не найдем файл, "
+            "то он будет автоматически создан с настройками(по умолчанию).\n"
+            "P.S Вы можете вручную менять настройки(однако за работоспособность "
+            "в таком случае мы не отвечаем!)\n"
+            "P.P.S Вы можете менять не только файл настроек(если будете следовать"
+            "структуре как в файле(структуру вы можете увидеть внутри файлов).".
+            format(file[2:], "таких как установка character ai, email and password по умолчанию")
+        )
+        input("Если вы поняли, то просто нажмите ENTER!\n")
+        with open(file, "a", encoding='utf-8') as f:
+            f.write("character_ai=Gamer Boy" + "\n")
+            f.write("email=None" + "\n")
+            f.write("password=None" + "\n")
+            f.write("auto_choice_mode=False" + "\n")
+            f.write("if_auto_choice_on_to_choose_the_mode=2" + "\n")
+            f.write("nick_of_bot_creator=@xpearhead" + "\n")
+            f.write("save_logs=True" + "\n")
+            f.write("quantity_of_msgs=6" + "\n")
+            f.write("redirecting=False" + "\n")
+            f.write("quantity_of_messages_for_redirecting=10" + "\n")
+            f.write(
+                "message=Извини, мне надо срочно идти, напиши, плиз, свой тг, там пообщаемся(если хочешь)" + "\n"
+            )
+            f.write("my_gender=М" + "\n")
+            f.write("partners_gender=Ж" + "\n")
+            f.write("my_age=12345" + "\n")
+            f.write("partners_age=12345" + "\n")
+            f.write("hide=False" + "\n")
+            f.write("if_ask_tg=False" + "\n")
+            f.write("my_tg=None" + "\n")
+
+try:
+    import selenium
+except ImportError:
+    os.system("pip install selenium")
+finally:
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    from selenium.webdriver.chrome.options import Options
+    from selenium.common.exceptions import (ElementNotInteractableException, NoSuchElementException,
+                                            ElementClickInterceptedException, TimeoutException,
+                                            StaleElementReferenceException, UnexpectedAlertPresentException,
+                                            WebDriverException, NoSuchWindowException, InvalidSessionIdException)
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver import ActionChains
+
+try:
+    import selenium_recaptcha_solver
+except ImportError:
+    os.system("pip install selenium-recaptcha-solver")
+finally:
+    from selenium_recaptcha_solver import RecaptchaSolver, RecaptchaException
+
+try:
+    import bs4
+except ImportError:
+    os.system("pip install beautifulsoup4")
+finally:
+    from bs4 import BeautifulSoup
+
+try:
+    import pyperclip
+except ImportError:
+    os.system("pip install pyperclip")
+finally:
+    import pyperclip
+
+try:
+    import chromedriver_py
+except ImportError:
+    os.system("pip install chromedriver_py")
+finally:
+    from chromedriver_py import binary_path
+
+try:
+    import fake_useragent
+except ImportError:
+    os.system("pip install fake-useragent")
+finally:
+    from fake_useragent import UserAgent
+
+# clean console
+os.system("cls")
+
+# set up the variables from kto_settings.txt
+for text in open("./kto_settings.txt", encoding='utf-8').readlines():
+    key, value = text.strip().split("=")
+    if key == "character_ai":
+        AI_NAME = value
+    if key == "email":
+        EMAIL = None if value == "None" else value
+    if key == "password":
+        PASSWORD = None if value == "None" else value
+    if key == "auto_choice_mode":
+        AUTO_CHOICE_MODE = True if value == "True" else False
+    if key == "if_auto_choice_on_to_choose_the_mode":
+        CHOOSE_THE_MODE = value
+    if key == "nick_of_bot_creator":
+        NICK_OF_BOT_CREATOR = value
+    if key == "save_logs":
+        SAVE_LOGS = True if value == "True" else False
+    if key == "quantity_of_msgs":
+        NECESSARY_QUANTITY_MESSAGES_TO_SAVE = int(value)
+    if key == "redirecting":
+        REDIRECTING = True if value == "True" else False
+    if key == "message":
+        LAST_MESSAGE = value
+    if key == "quantity_of_messages_for_redirecting":
+        MESSAGES_FOR_REDIRECTING = int(value)
+    if key == "my_gender":
+        MY_GENDER = value
+    if key == "partners_gender":
+        PARTNERS_GENDER = value
+    if key == "my_age":
+        MY_AGE = value
+    if key == "partners_age":
+        PARTNERS_AGE = value
+    if key == "hide":
+        HIDE_BROWSER = True if value == "True" else False
+    if key == "if_ask_tg":
+        ASK_TG = True if value == "True" else False
+    if key == "my_tg":
+        MY_TG = value
+
+
+def set_drivers_settings():
+    user_agent = UserAgent()
+    user_agent = user_agent.random
+    options = Options()
+    if HIDE_BROWSER:
+        options.add_argument("--headless")
+    options.add_argument('log-level=3')
+    options.add_argument("--start-maximized")
+    options.add_argument(f"user-agent={user_agent}")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option("detach", True)
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+    serv = Service(executable_path=binary_path)
+    drv = webdriver.Chrome(service=serv, options=options)
+    return drv
+
+
+def ignor_exceptions(func, ignored_exceptions, exit=False, **params):
+    while True:
+        try:
+            return func(**params)
+        except ignored_exceptions:
+            if exit:
+                return
+
+
+def go_to_site(*, driver, link, load_time, one_time=True):
+    # окно по какому-то странному образу вызывает ошибку
+    # так как оно закрыто, но мы пытаемся что-то сделать
+    ignor_exceptions(
+        func=driver.execute_script,
+        exit=True,
+        ignored_exceptions=(NoSuchWindowException, InvalidSessionIdException),
+        script=f'''window.open("{link}", "_blank");'''
+    )
+    sleep(load_time)
+    driver.switch_to.window(window_name=driver.window_handles[0])
+    if one_time:
+        driver.close()
+    driver.switch_to.window(window_name=driver.window_handles[0 if one_time else -1])
+
+
+def set_up_settings_for_webdriver():
+    while True:
+        # настраиваем driver
+        _driver = set_drivers_settings()
+        # решатель капч
+        _solver = RecaptchaSolver(driver=_driver)
+        go_to_site(driver=_driver, link="https://nekto.me/chat/", load_time=9)
+        soup = BeautifulSoup(_driver.page_source, "html.parser")
+        _text = soup.find("h2", {"id": "challenge-running"})
+        if _text:
+            _driver.close()
+        else:
+            break
+    return _driver, _solver
+
+
+def check_captcha():
+    try:
+        sleep(1)
+        driver.find_element(By.XPATH, '//iframe[@title="reCAPTCHA"]').click()
+    except (ElementNotInteractableException, NoSuchElementException,
+            ElementNotInteractableException, ElementClickInterceptedException):
+        return False
+    else:
+        driver.refresh()
+        return True
+
+
+def clean_text_from_extra_characters(msg, clean_time=True):
+    if not msg:
+        return None
+    # максимально можно убрать только 4 цифры
+    # так как время состоит из 4 цифр
+    figures_for_cleaning = 4
+    quantity_of_figures = 0
+    rvs_msg = msg[::-1]
+    if clean_time:
+        while True:
+            if not rvs_msg:
+                return None
+            char = rvs_msg[0]
+            if char in digits:
+                quantity_of_figures += 1
+            if quantity_of_figures <= figures_for_cleaning:
+                # если это так, значит это возраст
+                rvs_msg = rvs_msg[1:]
+                # если мы очистили от времени(4 цифры)
+                if quantity_of_figures == 4:
+                    break
+    rvs_msg = rvs_msg[::-1]
+    # иногда боты отправляют текст с пометкой того
+    # что они боты, так что убираем ее
+    if '-'.join(part for part in AI_NAME.split()) in rvs_msg and ":" in rvs_msg:
+        while rvs_msg[0] != ":":
+            rvs_msg = rvs_msg[1:]
+        # чтобы избавиться от ":"
+        rvs_msg = rvs_msg[1:]
+    return rvs_msg
+
+
+def try_to_solve_captcha():
+    try:
+        sleep(1)
+        recaptcha_iframe = driver.find_element(By.XPATH, '//iframe[@title="reCAPTCHA"]')
+        solver.click_recaptcha_v2(iframe=recaptcha_iframe)
+    except RecaptchaException:
+        driver.refresh()
+        time_to_wait = 15
+        print(
+            f"Мы вынуждены перезагрузить страницу.\n"
+            f"Бот не может решить капчу(гугл засек автоматизированные запросы)\n"
+            f"Можете решить капчу самостоятельно или подождите({time_to_wait}с)."
+        )
+        sleep(time_to_wait)
+    except (NoSuchElementException, ElementClickInterceptedException):
+        driver.refresh()
+    except TimeoutException:
+        pass
+    else:
+        print("Бот решил капчу, наслаждайтесь")
+
+
+def copy_text(answer, clean_time=True):
+    try:
+        pyperclip.copy(
+            clean_text_from_extra_characters(
+                answer,
+                clean_time=clean_time,
+            )
+        )
+    except pyperclip.PyperclipException:
+        pyperclip.copy("Эх(")
+        print(
+            "Во время копирования произошла ошибка."
+            "Скорее всего, это произошло из-за использования "
+            "двух одинаковых веб драйверов одновременно\n"
+            "Или вы пользовались компьютером параллельно с программой\n"
+            "Поэтому мы заменили это на 'Эx('"
+        )
+
+
+def wait_the_solution():
+    while check_captcha():
+        try_to_solve_captcha()
+
+
+def start_chat_to_ai(is_acception=True):
+    def fill_in_the_form():
+        def enter_em_and_pas():
+            __email = input("email: ")
+            __password = input("password: ")
+            return __email, __password
+
+        def find_the_user_element():
+            try:
+                return driver.find_element(By.ID, "username")
+            except NoSuchElementException:
+                sleep(1)
+            finally:
+                return driver.find_element(By.ID, "username")
+
+        def clean_inputs():
+            try:
+                user_el = find_the_user_element()
+                user_el.click()
+                for char in range(50):
+                    user_el.send_keys(Keys.ARROW_RIGHT)
+                    user_el.send_keys(Keys.BACKSPACE)
+            except ElementClickInterceptedException:
+                # пользователь до сих пор не прошел капчу
+                return False
+            else:
+                return True
+
+        if not (EMAIL and PASSWORD):
+            print("Введите данные(email или username) для сайта character ai(предварительно зарегистрируйтесь)")
+        email, password = (EMAIL, PASSWORD) if EMAIL and PASSWORD else enter_em_and_pas()
+        while True:
+            sleep(1)
+            # если возникла такая ошибка, значит пользователь сам проходит капчу
+            ignor_exceptions(
+                func=try_to_solve_captcha,
+                exit=True,
+                ignored_exceptions=(StaleElementReferenceException, )
+            )
+            # при обновлении страницы остается старый email
+            # так что мы стираем все символы
+            while not clean_inputs():
+                pass
+
+            username = find_the_user_element()
+            username.click()
+            username.send_keys(email)
+            _password = driver.find_element(By.ID, "password")
+            _password.click()
+            _password.send_keys(password)
+
+            path_for_xpath = "/html/body/div{}/main/section/div/div/div/form/div[3]/button"
+            # confirm form
+            try:
+                driver. \
+                    find_element(By.XPATH, path_for_xpath.format("")). \
+                    click()
+            except NoSuchElementException:
+                driver. \
+                    find_element(By.XPATH, path_for_xpath.format("[1]")). \
+                    click()
+            except ElementClickInterceptedException:
+                # пользователь в это время сам вводит капчу
+                pass
+
+            sleep(1)
+            if "Welcome" not in driver.page_source:
+                break
+
+            if "Wrong email" in driver.page_source:
+                print(
+                    "\033[31m {}\033[0m".
+                    format(
+                        "Wrong email or password!\n"
+                        " Please enter email and password again."
+                    )
+                )
+                email, password = enter_em_and_pas()
+            # при обновлении страницы остается старый email
+            # так что мы стираем все символы
+            while not clean_inputs():
+                pass
+
+    def find_the_character_ai():
+        driver.get("https://beta.character.ai/search?")
+        sleep(1.5)
+        try:
+            search_inp = driver. \
+                find_element(By.ID, "search-input")
+        except NoSuchElementException:
+            driver.refresh()
+            sleep(3)
+            search_inp = driver. \
+                find_element(By.ID, "search-input")
+        search_inp.click()
+        search_inp.send_keys(
+            AI_NAME + Keys.SPACE + NICK_OF_BOT_CREATOR
+        )
+        driver.find_element(By.CSS_SELECTOR, "#root > div.apppage > div:nth-child(1) > div > div > div > "
+                                             "div.d-flex.fixed-top.p-2 > div.d-flex.col.align-items.center > "
+                                             "div > button").click()
+        sleep(2)
+        # choice character
+        driver.find_element(By.CSS_SELECTOR, "#root > div.apppage > div:nth-child(1) > div > div > div > "
+                                             "div.container-fluid.p-0 > div > div > div:nth-child(1) > div > a > div > "
+                                             "div > div > div.col > div:nth-child(2) > div").click()
+        sleep(2)
+        request_for_ai("Привет", wait_answer=False)
+        # переключение на другое окно
+        driver.switch_to.window(window_name=driver.window_handles[0])
+        sleep(1)
+
+    sleep(2)
+    if is_acception:
+        # accept something
+        driver. \
+            find_element(By.CSS_SELECTOR, r"#\#AcceptButton").click()
+        # go to log in
+        driver. \
+            find_element(By.CSS_SELECTOR, "#header-row > div:nth-child(5) > div:nth-child(1) > button").click()
+        # wait for the downloading page
+        sleep(1)
+
+        fill_in_the_form()
+    find_the_character_ai()
+
+
+def request_for_ai(sentence, wait_answer=True):
+    def find_the_answer_from_ai():
+        _soup = BeautifulSoup(driver.page_source, "html.parser")
+        _answers = _soup.find_all("div", {"class": "swiper-no-swiping"})
+        return _answers
+    try:
+        # вводим текст, который собеседник написал нам
+        user_input = driver. \
+            find_element(By.ID, "user-input")
+        user_input.click()
+        copy_text(
+            sentence,
+            clean_time=False
+        )
+        user_input.send_keys(
+            Keys.CONTROL + "v"
+        )
+        # нажимаем enter, чтобы отправить
+        user_input.send_keys(Keys.ENTER)
+    except NoSuchElementException:
+        # сайт завис, selenium не может найти элементы
+        # ничего не делаем, так как ниже перезаход на сайт
+        pass
+    if wait_answer:
+        try:
+            fake_typing(time=3.8)
+        except RuntimeError:
+            # пользователь завершил чат
+            return
+        ai_msgs = find_the_answer_from_ai()
+        # проверка на отправку сообщения от бота
+        while len(ai_msgs) != len(find_the_answer_from_ai()):
+            sleep(1)
+            ai_msgs = find_the_answer_from_ai()
+        try:
+            last_ai_msg = ai_msgs[-1].text.split("☆")[0]
+        except IndexError:
+            # страница не загружается, проблема с сайтом
+            # надо войти заново
+            print(
+                "Произошла ошибка в работе сайта character_ai!\n"
+                "Мы вынуждены прервать диалог и перезайти."
+            )
+            # возвращение в главное меню
+            driver.execute_script("window.history.go(-2)")
+            start_chat_to_ai(is_acception=False)
+            return
+        # сравниваем изменилось ли за время кол-во символов
+        # если да, то ai еще формулирует свою мысль
+        sleep(1)
+        new_last_ai_msg = find_the_answer_from_ai()[-1].text.split("☆")[0]
+        while len(new_last_ai_msg) > len(last_ai_msg):
+            last_ai_msg = find_the_answer_from_ai()[-1].text.split("☆")[0]
+            sleep(1)
+            new_last_ai_msg = find_the_answer_from_ai()[-1].text.split("☆")[0]
+        return last_ai_msg
+
+
+def print_all_information():
+    print(
+        "Создатель: 1llumi\n"
+        "lolz создателя: {}\n".
+        format(LOLZ_LINK)
+    )
+
+
+def change_settings():
+    settings = {}
+    for _text in open("kto_settings.txt", encoding='utf-8').readlines():
+        _text = _text.strip()
+        key, value = _text.split("=")
+        change_or_not = input(
+            f"Значение {key} сейчас = {value}\n"
+            f"Вы хотите поменять значение? [Y/N(press ENTER)]: "
+        )
+        if change_or_not == "Y":
+            value = input(
+                "Введите новое значение: "
+            )
+        settings[key] = value
+    # удаляем прошлый файл
+    os.remove(os.getcwd() + "/" + file)
+    # записать значения
+    with open("kto_settings.txt", "a", encoding='utf-8') as _file:
+        for k, vl in settings.items():
+            _file.write(f"{k}={vl}" + "\n")
+
+
+def check_character_ai_clouflare_protection():
+    try:
+        # если элемента нет, значит бот не прошел
+        # cloudflare protection
+        driver. \
+            find_element(By.ID, "header-row")
+    except NoSuchElementException:
+        driver.close()
+        return True
+
+
+def go_to_character_ai():
+    def go_to_another_site():
+        go_to_site(
+            driver=driver,
+            link="https://beta.character.ai/",
+            load_time=3,
+            one_time=False
+        )
+        return check_character_ai_clouflare_protection()
+    while True:
+        try:
+            while go_to_another_site(): pass
+            break
+        except InvalidSessionIdException:
+            # все вкладки браузера были закрыты
+            global driver, solver
+            driver, solver = set_up_settings_for_webdriver()
+    ignor_exceptions(
+        func=start_chat_to_ai,
+        ignored_exceptions=(NoSuchElementException, )
+    )
+
+
+driver, solver = set_up_settings_for_webdriver()
+# выбор режима для бота
+while True:
+    try:
+        if not AUTO_CHOICE_MODE:
+            choice_mode = input(
+                "Выбор режима:\n"
+                "1 - обучение, бот связывает слова и ответы на них для дальнейшего самостоятельного общения\n"
+                "2 - практика, бот отвечает на сообщения на основе полученных данных во время обучения и AI\n"
+                "3 - подробная информация о боте и создателе\n"
+                "4 - расширенные настройки\n"
+                "Введите цифру: "
+            )
+        else:
+            choice_mode = CHOOSE_THE_MODE
+    except NameError:
+        print(
+            "Проверьте правильность выставленных настроек(какая-то из них указана неверна).\n"
+            "Чтобы точно избавиться от проблемы удалите файл с настройками и перезапустите скрипт."
+        )
+        while True: pass
+    try:
+        choice_mode = int(choice_mode)
+    except ValueError:
+        # clean console
+        os.system("cls")
+        print("\033[31m Введите цифру! \033[0m")
+    else:
+        if choice_mode == 3:
+            print_all_information()
+            continue
+        if choice_mode == 4:
+            change_settings()
+            print(
+                "Чтобы изменения вошли в силу, перезапустите скрипт!"
+            )
+            while True: pass
+        if choice_mode == 2:
+            go_to_character_ai()
+        if choice_mode > 4:
+            print("Введите не рандомную цифру, а цифру слева от описания того, что она делает!")
+            continue
+        break
+
+
+def start_chat_in_nekto_me(accept_rules=True):
+    # нажатие на кнопку "Начать чат"
+    driver.find_element(By.ID, "searchCompanyBtn").click()
+    sleep(1)
+    if accept_rules:
+        # принять правила чата
+        driver.find_element(By.CSS_SELECTOR, "body > div.swal2-container.swal2-center.swal2-fade.swal2-shown "
+                                             "> div > div.swal2-actions > button.swal2-confirm.swal2-styled").click()
+    print("Настройки успешно выставлены.")
+
+
+def stop_search():
+    driver.\
+        find_element(By.CLASS_NAME, "btn btn-lg btn-stop-search").click()
+
+
+def set_up_settings():
+    """
+    Здесь идут общие настройки пола, возраста и т.д
+    """
+    # мой пол
+    driver.find_element(By.CSS_SELECTOR, f"body > div.row > div > div.container.chat_container >"
+                                         f" div.chat-box.col-xs-12.col-sm-12.col-md-8.col-lg-6.mainStep > div."
+                                         f"row.step_chatbox.main_step > div > div.sexRow.row > div:nth-child(1) > div >"
+                                         f" button:nth-child({'2' if MY_GENDER == 'М' else '3'})"
+                        ).click()
+    # пол собеседника
+    driver.find_element(By.CSS_SELECTOR, f"body > div.row > div > div.container.chat_container > "
+                                         f"div.chat-box.col-xs-12.col-sm-12.col-md-8.col-lg-6.mainStep > "
+                                         f"div.row.step_chatbox.main_step > div > div.sexRow.row > "
+                                         f"div.col-xs-6.col-sm-6.col-md-6.col-lg-6.wishSex.threeBtns "
+                                         f"> div > button:nth-child({'3' if PARTNERS_GENDER == 'Ж' else '2'})"
+                        ).click()
+
+    def set_up_age(who_is):
+        age_mode = 1 if who_is == "my" else 2
+        ages = MY_AGE if who_is == "my" else PARTNERS_AGE
+        for age_fig in ages:
+            driver.find_element(By.CSS_SELECTOR, f"body > div.row > div > div.container.chat_container > "
+                                                 f"div.chat-box.col-xs-12.col-sm-12.col-md-8.col-lg-6.mainStep > "
+                                                 f"div.row.step_chatbox.main_step > div > div.row.row-search > "
+                                                 f"div:nth-child({age_mode}) > div.s-age > button:nth-child({age_fig})"
+                                ).click()
+    set_up_age(who_is="my")
+    set_up_age(who_is="partner")
+    start_chat_in_nekto_me()
+
+
+def wait_the_partner():
+    print("Ждем собеседника...")
+    try:
+        time_to_reload = datetime.now() + timedelta(seconds=30)
+        while "Ищем свободного собеседника..." in driver.page_source:
+            sleep(1)
+            now_time = datetime.now()
+            if now_time > time_to_reload:
+                try:
+                    stop_search()
+                except NoSuchElementException:
+                    # кнопка не найдена
+                    # значит диалог начался
+                    if not check_captcha():
+                        # проверка на капчу, т.к иногда
+                        # истекает время прохождения капчи
+                        # бот застревает в infinity loop
+                        if "Ищем свободного собеседника..." not in driver.page_source:
+                            # проверяем еще раз, ибо может быть бесконечный цикл ожидания
+                            return
+                raise
+    except UnexpectedAlertPresentException:
+        # не удалось связаться с reCAPTCHA
+        # пробуем пройти заново
+        wait_the_solution()
+
+
+def check_to_stop_to_chat():
+    _soup = BeautifulSoup(driver.page_source, "html.parser")
+    if check_captcha():
+        return True
+    return bool(
+        _soup.find(
+            "button",
+            {"class": "btn btn-md btn-my1 nst close_dialog_btn disabled"}
+        )
+    )
+
+
+def find_next_partner():
+    sleep(1)
+    if element := ignor_exceptions(
+        func=driver.find_element,
+        exit=True,
+        ignored_exceptions=(NoSuchElementException, ),
+        by=By.CSS_SELECTOR,
+        value="body > div.row > div > div.container.chat_container.advState > "
+              "div.chat-box.col-xs-12.col-sm-12.col-md-8.col-lg-6 > "
+              "div.row.step_chatbox.chat_step > div > div.status-end.navinfo.talk_over.nst "
+              "> div > button:nth-child(5)"
+    ):
+        try:
+            element.click()
+        except ElementClickInterceptedException:
+            pass
+
+
+def check_new_msgs(phrases, answers):
+    return True if ["not empty list" for phs in phrases if phs not in answers] else False
+
+
+def wait_for_the_answer_on_msgs(phrases, answers):
+    for phs in phrases:
+        if phs not in answers:
+            _text = find_new_messages(who_is="self")
+            # избавляемся от None значений
+            _text = [msg for msg in [clean_text_from_extra_characters(msg.text) for msg in _text] if msg]
+
+            if ans := list(filter(lambda x: not any(x == answers.get(_ans) for _ans in answers), _text)):
+                answers[phs] = ans[0]
+
+
+def answer_msgs_by_myself(phrases, answers, fill_in_all_answers=False):
+    for phs in phrases:
+        if phs not in answers:
+            text_input = driver.find_element(By.CLASS_NAME, "emojionearea-editor")
+            if answer := exist_qst_in_bd(phs):
+                text_input.send_keys(answer)
+            elif fill_in_all_answers:
+                answer = "random_answer"
+            else:
+                driver.switch_to.window(window_name=driver.window_handles[-1])
+                request_time_start = datetime.now()
+                answer = request_for_ai(phs)
+                driver.switch_to.window(window_name=driver.window_handles[0])
+                copy_text(
+                    answer,
+                    clean_time=False,
+                )
+                correct_typing(
+                    func=text_input.send_keys,
+                    keys=Keys.CONTROL + "v",
+                    time=request_time_start,
+                )
+            try:
+                text_input.send_keys(Keys.ENTER)
+            except StaleElementReferenceException:
+                # если элемент не найден
+                ActionChains(driver) \
+                    .send_keys(Keys.ENTER) \
+                    .perform()
+            answers[phs] = answer
+
+
+def close_current_chat(by_myself=False):
+    try:
+        driver.find_element(By.CSS_SELECTOR, "body > div.row > div > div.container.chat_container.advState > "
+                                             "div.chat-box.col-xs-12.col-sm-12.col-md-8.col-lg-6 > div.header_chat > "
+                                             "div:nth-child(1) > div.right_block_hc.main_chat_but > "
+                                             "button.btn.btn-md.btn-my1.nst.close_dialog_btn"
+                            ).click()
+        sleep(1)
+        driver.find_element(By.CSS_SELECTOR, "body > div.swal2-container.swal2-center.swal2-fade.swal2-shown > "
+                                             "div > div.swal2-actions > button.swal2-confirm.swal2-styled"
+                            ).click()
+    except:
+        pass
+    else:
+        if not by_myself:
+            print("Собеседник был неактивен в течение 30с+")
+
+
+def check_unuseless_phrase(phrase):
+    with open("useless_phrases.txt", "r") as _f:
+        for word in _f.readlines():
+            if phrase.upper() == word.upper().strip("\n"):
+                return word
+
+
+def exist_qst_in_bd(question):
+    if not isinstance(question, str):
+        return False
+    with open("qst_ans.txt", "r") as _f:
+        for qst in _f.readlines():
+            if question.upper() == (qst := qst.split("|"))[0].upper():
+                return qst[-1]
+
+
+def write_dialog(answers):
+    with open("qst_ans.txt", "a") as _f:
+        for qst, ans in answers.items():
+            if not exist_qst_in_bd(qst):
+                _f.write(f"{qst}  |  {ans}" + "\n")
+
+
+def find_new_messages(who_is):
+    _soup = BeautifulSoup(driver.page_source, "html.parser")
+    return _soup.find_all("div", {"class": f"mess_block {who_is}"}) + \
+        _soup.find_all("div", {"class": f"mess_block {who_is} window_chat_dialog_new"})
+
+
+def correct_typing(*, func, keys, time):
+    # не считаем пробелы как за символ
+    chars = len(''.join(char for char in pyperclip.paste().split()))
+    while True:
+        time_now = datetime.now()
+        # сколько символов успел бы напечатать человек за это время
+        difference_of_time = (time_now - time).seconds
+        chars_of_person_for_time = difference_of_time * 5
+        if chars_of_person_for_time >= chars:
+            try:
+                func(keys)
+            except StaleElementReferenceException:
+                # почему-то происходит ошибка при печати
+                # возможно, такое поведение связано с using pk
+                # включение/выключение монитора влияет на это(i'm not sure)
+                pass
+            return
+        try:
+            # вычисляем примерное время, сколько еще надо печатать человеку
+            # чтобы он смог напечатать этот текст
+            fake_typing(
+                time=round(
+                    (chars - chars_of_person_for_time) / 5
+                ),
+            )
+        except RuntimeError:
+            # ошибка для досрочного выхода из печати
+            # т.к. собеседник завершил чат
+            return
+        # возвращаемся на некто ми
+        driver.switch_to.window(window_name=driver.window_handles[0])
+
+
+def write_the_last_message(last_message, *, answers, phrases):
+    def write_in_db(_text):
+        with open("bd_of_nicks.txt", "a", encoding="utf-8") as _f:
+            _f.write(_text + "\n")
+    nickname = ""
+    another_text = ""
+    text_input = driver.find_element(By.CLASS_NAME, "emojionearea-editor")
+    copy_text(
+        last_message,
+        clean_time=False
+    )
+    correct_typing(
+        func=text_input.send_keys,
+        keys=Keys.CONTROL + "v",
+        time=datetime.now(),
+    )
+    text_input.send_keys(Keys.ENTER)
+    # находим новые сообщения
+    check_and_add_partners_messages(phrases)
+    # заполнить пропуски, чтобы бот на них не отвлекался
+    answer_msgs_by_myself(
+        answers=answers,
+        phrases=phrases,
+        fill_in_all_answers=True,
+    )
+    start_time = datetime.now()
+    while True:
+        partners_msgs = check_and_add_partners_messages(
+            partners_phrases=phrases,
+        )
+        # если хотя бы один символ на английском, значит это ник
+        for msg in partners_msgs:
+            if msg not in answers:
+                for char in msg:
+                    # доступные символы для тг ника
+                    if char in ascii_letters or char in digits + "_":
+                        nickname += char
+                    elif ASK_TG:
+                        another_text += char.upper()
+        # проверка на номер телефона
+        # если символов > 11, скорее всего, это номер
+        if sum(_ in digits for _ in nickname) >= 11:
+            write_in_db(nickname)
+            break
+        # иногда парсятся цифры вместе с ником
+        # но тг ник не может начинаться с цифр
+        try:
+            while nickname[0] in digits + "_":
+                nickname = nickname[1:]
+        except IndexError:
+            pass
+        if len(nickname) >= 5:
+            write_in_db(nickname)
+            break
+        # просят написать мой тг
+        elif any(word in another_text for word in ("НАПИШИ", "СКИНЬ", "СВОЙ")):
+            # если такого элемента нет, значит диалог завершен
+            try:
+                text_input = driver.find_element(By.CLASS_NAME, "emojionearea-editor")
+                text_input.send_keys(MY_TG + Keys.ENTER)
+                # для правдоподобности
+                sleep(5)
+            except NoSuchElementException:
+                pass
+            finally:
+                break
+        elif check_to_stop_to_chat():
+            break
+        else:
+            now_time = datetime.now()
+            if (now_time - start_time).seconds >= 90:
+                break
+
+
+def fake_typing(time):
+    def type_and_clear(mode=None):
+        for _ in range(10):
+            try:
+                sleep(0.04)
+                text_input.send_keys(
+                    "a" if mode == "type" else Keys.ARROW_RIGHT + Keys.BACKSPACE
+                )
+            except ElementClickInterceptedException:
+                pass
+    # время когда завершится печать
+    time_to_over = datetime.now() + timedelta(seconds=time)
+    start_time = datetime.now()
+    # сохраняем окна для selenium'а
+    nekto_me_window = driver.window_handles[0]
+    character_ai_window = driver.window_handles[-1]
+    # переходим на некто ми
+    driver.switch_to.window(window_name=nekto_me_window)
+    text_input = driver.find_element(By.CLASS_NAME, "emojionearea-editor")
+    while start_time < time_to_over:
+        try:
+            type_and_clear(mode="type")
+            type_and_clear(mode="clear")
+        except StaleElementReferenceException:
+            # элемент устарел(при взаимодействии), надо найти заново
+            try:
+                text_input = driver.find_element(By.CLASS_NAME, "emojionearea-editor")
+            except NoSuchElementException:
+                pass
+        if check_to_stop_to_chat():
+            raise
+        start_time = datetime.now()
+    # переключаемся обратно
+    driver.switch_to.window(window_name=character_ai_window)
+
+
+def saving_logs(title_of_folder):
+    def save_screen():
+        # ищем подходящее имя(по порядку)
+        # для нашего скриншота
+        _number = 1
+        while os.path.exists(full_path := os.getcwd() + "/" + title_of_folder + "/" + f"shot{_number}.png"):
+            _number += 1
+        driver.save_screenshot(full_path)
+        return title_of_folder
+    # если есть имя папки
+    if title_of_folder:
+        save_screen()
+        return title_of_folder
+    number = 1
+    title_of_folder = f"folder{number}"
+    # ищем подходящее имя(по порядку)
+    # для нашей папки
+    while os.path.isdir(title_of_folder):
+        number += 1
+        title_of_folder = f"folder{number}"
+    os.mkdir(title_of_folder)
+    save_screen()
+    return title_of_folder
+
+
+def clean_chat_with_ai(window_with_character_ai):
+    def open_chat_settings():
+        driver.find_element(By.CSS_SELECTOR, "#root > div.apppage > div.chat2 > div:nth-child(1) > "
+                                             "div:nth-child(1) > div:nth-child(3) > div > div > span > svg"
+                            ).click()
+    # переключаемся на окно с character ai
+    driver.switch_to.window(window_name=window_with_character_ai)
+    ignor_exceptions(
+        func=open_chat_settings,
+        exit=False,
+        ignored_exceptions=(NoSuchElementException, ),
+    )
+    sleep(1)
+    try:
+        # нажатие на save and start new chat
+        driver.find_element(By.CSS_SELECTOR, "#root > div.apppage > div.chat2 > div:nth-child(1) > div:nth-child(1) > "
+                                             "div:nth-child(3) > div > div > div > button:nth-child(1)"
+                            ).click()
+    except (NoSuchElementException, ElementClickInterceptedException):
+        # если возникла это ошибка, значит элемент не загрузился
+        # значит надо перезагрузить страницу
+        driver.refresh()
+    finally:
+        # переключаемся на предыдущее окно
+        driver.switch_to.window(window_name=driver.window_handles[0])
+
+
+def print_dialog_is_over():
+    print(
+        "-------------------------------------------------\n"
+        "Диалог завершился, если вы хотите хранить подробности переписок, \n"
+        "То укажите это в расширенных настройках\n"
+        "-------------------------------------------------\n"
+    )
+
+
+def check_and_add_partners_messages(partners_phrases):
+    partners_msgs = find_new_messages(who_is="nekto")
+    for msg in partners_msgs:
+        if _text := clean_text_from_extra_characters(msg.text):
+            # проверка есть ли значение в файле фраз
+            # на которые боту не надо отвечать
+            if not check_unuseless_phrase(_text):
+                partners_phrases.add(_text)
+    return partners_phrases
+
+
+def chat_to_partner():
+    # иногда случается, что бот думает, что диалог начался,
+    # хотя он только закончился, так что делаем проверку
+    print("Общение началось")
+    quantity_messages_for_save_in_logs = NECESSARY_QUANTITY_MESSAGES_TO_SAVE
+    folder_name_to_save_logs = None
+    start_time = datetime.now()
+    partners_phrases = set()
+    answers = dict()
+    while True:
+        if check_to_stop_to_chat():
+            print_dialog_is_over()
+            if SAVE_LOGS:
+                # если сообщения уже были сохранены ранее,
+                # но пользователь завершил чат
+                # и написал хотя бы 1 сообщение
+                # все равно сохраняем переписку
+                if NECESSARY_QUANTITY_MESSAGES_TO_SAVE <= len(answers.keys()) \
+                        < quantity_messages_for_save_in_logs:
+                    saving_logs(folder_name_to_save_logs)
+            if choice_mode == 1:
+                write_dialog(answers)
+            if len(answers.keys()) >= 3:
+                clean_chat_with_ai(
+                    window_with_character_ai=driver.window_handles[-1],
+                )
+            find_next_partner()
+            break
+        check_and_add_partners_messages(partners_phrases)
+        # если в настройках выставлено сохранение логов
+        if SAVE_LOGS:
+            if len(answers.keys()) >= quantity_messages_for_save_in_logs:
+                # переменная нужна, чтобы если папка существует
+                # не создавалась новая, а все сохранялось в текущую
+                folder_name_to_save_logs = saving_logs(folder_name_to_save_logs)
+                # увеличиваем, так как нам надо сохранить другую часть переписки
+                quantity_messages_for_save_in_logs += quantity_messages_for_save_in_logs
+
+        # перенаправление включается в настройках
+        if REDIRECTING:
+            if len(answers.keys()) >= MESSAGES_FOR_REDIRECTING:
+                # бот оставляет последнее сообщение и ждет ответа, иначе переключает
+                write_the_last_message(
+                    LAST_MESSAGE,
+                    answers=answers,
+                    phrases=partners_phrases,
+                )
+                # на всякий случай сохраняем последний скрин
+                if SAVE_LOGS:
+                    try:
+                        saving_logs(folder_name_to_save_logs)
+                    except NameError:
+                        raise "У вас нет созданной папки, укажите параметр" \
+                              "quantity_of_msgs меньше чем quantity_of_messages_for_redirecting"
+                # чтобы не было отправки большого кол-ва сообщений
+                # как только получили ник, уходим
+                clean_chat_with_ai(
+                    window_with_character_ai=driver.window_handles[-1],
+                )
+                close_current_chat(by_myself=True)
+                # break нужен за тем, чтобы чат не очищался 2 раза
+                break
+
+        if check_new_msgs(partners_phrases, answers):
+            if choice_mode == 1:
+                wait_for_the_answer_on_msgs(partners_phrases, answers)
+            if choice_mode == 2:
+                answer_msgs_by_myself(partners_phrases, answers)
+            start_time = datetime.now()
+        else:
+            now_time = datetime.now()
+            if (now_time - start_time).seconds >= 60:
+                close_current_chat()
+
+
+ignor_exceptions(
+    func=set_up_settings,
+    ignored_exceptions=(NoSuchElementException, ),
+)
+# the main logic
+while True:
+    # проверка на капчу и ее решение
+    wait_the_solution()
+    try:
+        wait_the_partner()
+    except RuntimeError:
+        # если возникла ошибка
+        # поиск идет 30+ секунд
+        start_chat_in_nekto_me(
+            accept_rules=False,
+        )
+        continue
+    chat_to_partner()
