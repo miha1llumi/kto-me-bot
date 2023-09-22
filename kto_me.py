@@ -18,7 +18,7 @@ except ImportError:
         "Если у вас появляется надпись, что ffmpeg не найден, то это нормально, спустя время она пропадет.\n"
         "Надпись не влияет на работоспособность программы(но лучше все равно хотя бы 1 раз перезапустить скрипт).\n"
     )
-    import ffmpeg_downloader
+    while True: pass
 finally:
     if not os.path.exists(file := "./useless_phrases.txt"):
         with open(file, "a") as f:
@@ -39,7 +39,7 @@ finally:
             "то он будет автоматически создан с настройками(по умолчанию).\n"
             "P.S Вы можете вручную менять настройки(однако за работоспособность "
             "в таком случае мы не отвечаем!)\n"
-            "P.P.S Вы можете менять не только файл настроек(если будете следовать"
+            "P.P.S Вы можете менять не только файл настроек(если будете следовать "
             "структуре как в файле(структуру вы можете увидеть внутри файлов).".
             format(file[2:], "таких как установка character ai, email and password по умолчанию")
         )
@@ -176,7 +176,10 @@ def set_drivers_settings():
     options.add_experimental_option("detach", True)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
-    serv = Service(executable_path=binary_path)
+    try:
+        serv = Service(executable_path=binary_path)
+    except WebDriverException:
+        raise FileNotFoundError("Установите google chrome browser на ваш компьютер.")
     drv = webdriver.Chrome(service=serv, options=options)
     return drv
 
