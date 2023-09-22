@@ -5,6 +5,7 @@ from string import digits, ascii_letters
 from datetime import datetime, timedelta
 
 LOLZ_LINK = "https://zelenka.guru/members/4245200/"
+GITHUB_LINK = "https://github.com/miha1llumi"
 
 # ffmpeg to complete recaptcha
 try:
@@ -13,7 +14,8 @@ except ImportError:
     os.system("pip install ffmpeg-downloader")
     os.system("ffdl install --add-path")
     print(
-        "Пожалуйста, перезапустите скрипт, чтобы соответствующие изменения вступили в силу."
+        "Пожалуйста, перезапустите скрипт, чтобы соответствующие изменения вступили в силу.\n"
+        "Возможно, потребуется около 2-5+ минут, так что эта  надпись может появляться еще некоторое время."
     )
     while True:
         pass
@@ -498,8 +500,9 @@ def request_for_ai(sentence, wait_answer=True):
 def print_all_information():
     print(
         "Создатель: 1llumi\n"
-        "lolz создателя: {}\n".
-        format(LOLZ_LINK)
+        "lolz создателя: {}\n"
+        "Гит хаб создателя: {}".
+        format(LOLZ_LINK, GITHUB_LINK)
     )
 
 
