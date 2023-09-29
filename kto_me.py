@@ -118,21 +118,21 @@ def set_drivers_settings():
     return drv
 
 
-def ignor_exceptions(func, ignored_exceptions, exit=False, **params):
+def ignor_exceptions(func, ignored_exceptions, is_exit=False, **params):
     while True:
         try:
             return func(**params)
         except ignored_exceptions:
-            if exit:
+            if is_exit:
                 return
 
 
-def go_to_site(*, driver, link, load_time, one_time=True):
+def go_to_site(*, link, load_time, one_time=True):
     # окно по какому-то странному образу вызывает ошибку
     # так как оно закрыто, но мы пытаемся что-то сделать
     ignor_exceptions(
         func=driver.execute_script,
-        exit=True,
+        is_exit=True,
         ignored_exceptions=(NoSuchWindowException, InvalidSessionIdException),
         script=f'''window.open("{link}", "_blank");'''
     )
@@ -145,18 +145,18 @@ def go_to_site(*, driver, link, load_time, one_time=True):
 
 def set_up_settings_for_webdriver():
     while True:
-        # настраиваем driver
-        _driver = set_drivers_settings()
+        global driver, solver
+        driver = set_drivers_settings()
         # решатель капч
-        _solver = RecaptchaSolver(driver=_driver)
-        go_to_site(driver=_driver, link="https://nekto.me/chat/", load_time=9)
-        soup = BeautifulSoup(_driver.page_source, "html.parser")
-        _text = soup.find("h2", {"id": "challenge-running"})
-        if _text:
-            _driver.close()
+        solver = RecaptchaSolver(driver=driver)
+        go_to_site(link="https://nekto.me/chat/", load_time=9)
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        text = soup.find("h2", {"id": "challenge-running"})
+        if text:
+            driver.close()
         else:
             break
-    return _driver, _solver
+    return driver, solver
 
 
 def is_captcha():
@@ -285,13 +285,12 @@ def start_chat_to_ai(is_acception=True):
             # если возникла такая ошибка, значит пользователь сам проходит капчу
             ignor_exceptions(
                 func=try_to_solve_captcha,
-                exit=True,
+                is_exit=True,
                 ignored_exceptions=(StaleElementReferenceException, )
             )
             # при обновлении страницы остается старый email
             # так что мы стираем все символы
-            while not clean_inputs():
-                pass
+            while not clean_inputs(): pass
 
             username = find_the_user_element()
             username.click()
@@ -329,8 +328,7 @@ def start_chat_to_ai(is_acception=True):
                 email, password = enter_em_and_pas()
             # при обновлении страницы остается старый email
             # так что мы стираем все символы
-            while not clean_inputs():
-                pass
+            while not clean_inputs(): pass
 
     def find_the_character_ai():
         driver.get("https://beta.character.ai/search?")
@@ -479,7 +477,6 @@ def check_character_ai_cloudflare_protection():
 def go_to_character_ai():
     def go_to_another_site():
         go_to_site(
-            driver=driver,
             link="https://beta.character.ai/",
             load_time=3,
             one_time=False
@@ -491,57 +488,56 @@ def go_to_character_ai():
             break
         except InvalidSessionIdException:
             # все вкладки браузера были закрыты
-            global driver, solver
-            driver, solver = set_up_settings_for_webdriver()
+            set_up_settings_for_webdriver()
     ignor_exceptions(
         func=start_chat_to_ai,
         ignored_exceptions=(NoSuchElementException, )
     )
 
 
-driver, solver = set_up_settings_for_webdriver()
-# выбор режима для бота
-while True:
-    try:
-        if not AUTO_CHOICE_MODE:
-            choice_mode = input(
-                "Выбор режима:\n"
-                "1 - обучение, бот связывает слова и ответы на них для дальнейшего самостоятельного общения\n"
-                "2 - практика, бот отвечает на сообщения на основе полученных данных во время обучения и AI\n"
-                "3 - подробная информация о боте и создателе\n"
-                "4 - расширенные настройки\n"
-                "Введите цифру: "
-            )
-        else:
-            choice_mode = CHOOSE_THE_MODE
-    except NameError:
-        print(
-            "Проверьте правильность выставленных настроек(какая-то из них указана неверна).\n"
-            "Чтобы точно избавиться от проблемы удалите файл с настройками и перезапустите скрипт."
-        )
-        while True: pass
-    try:
-        choice_mode = int(choice_mode)
-    except ValueError:
-        # clean console
-        os.system("cls")
-        print("\033[31m Введите цифру! \033[0m")
-    else:
-        if choice_mode == 3:
-            print_all_information()
-            continue
-        if choice_mode == 4:
-            change_settings()
+def choose_mode_for_bot():
+    while True:
+        try:
+            if not AUTO_CHOICE_MODE:
+                choice_mode = input(
+                    "Выбор режима:\n"
+                    "1 - обучение, бот связывает слова и ответы на них для дальнейшего самостоятельного общения\n"
+                    "2 - практика, бот отвечает на сообщения на основе полученных данных во время обучения и AI\n"
+                    "3 - подробная информация о боте и создателе\n"
+                    "4 - расширенные настройки\n"
+                    "Введите цифру: "
+                )
+            else:
+                choice_mode = CHOOSE_THE_MODE
+        except NameError:
             print(
-                "Чтобы изменения вошли в силу, перезапустите скрипт!"
+                "Проверьте правильность выставленных настроек(какая-то из них указана неверна).\n"
+                "Чтобы точно избавиться от проблемы удалите файл с настройками и перезапустите скрипт."
             )
             while True: pass
-        if choice_mode == 2:
-            go_to_character_ai()
-        if choice_mode > 4:
-            print("Введите не рандомную цифру, а цифру слева от описания того, что она делает!")
-            continue
-        break
+        try:
+            choice_mode = int(choice_mode)
+        except ValueError:
+            # clean console
+            os.system("cls")
+            print("\033[31m Введите цифру! \033[0m")
+        else:
+            if choice_mode == 3:
+                print_all_information()
+                continue
+            if choice_mode == 4:
+                change_settings()
+                print(
+                    "Чтобы изменения вошли в силу, перезапустите скрипт!"
+                )
+                while True: pass
+            if choice_mode == 2:
+                go_to_character_ai()
+            if choice_mode > 4:
+                print("Введите не рандомную цифру, а цифру слева от описания того, что она делает!")
+                continue
+            break
+    return choice_mode
 
 
 def start_chat_in_nekto_me(accept_rules=True):
@@ -635,7 +631,7 @@ def find_next_partner():
     sleep(1)
     if element := ignor_exceptions(
         func=driver.find_element,
-        exit=True,
+        is_exit=True,
         ignored_exceptions=(NoSuchElementException, ),
         by=By.CSS_SELECTOR,
         value="body > div.row > div > div.container.chat_container.advState > "
@@ -920,7 +916,7 @@ def clean_chat_with_ai(window_with_character_ai):
     driver.switch_to.window(window_name=window_with_character_ai)
     ignor_exceptions(
         func=open_chat_settings,
-        exit=False,
+        is_exit=False,
         ignored_exceptions=(NoSuchElementException, ),
     )
     sleep(1)
@@ -958,7 +954,7 @@ def check_and_add_partners_messages(partners_phrases):
     return partners_phrases
 
 
-def chat_to_partner():
+def chat_to_partner(choice_mode):
     # иногда случается, что бот думает, что диалог начался,
     # хотя он только закончился, так что делаем проверку
     print("Общение началось")
@@ -1034,6 +1030,7 @@ def chat_to_partner():
 
 
 def main():
+    mode = choose_mode_for_bot()
     ignor_exceptions(
         func=set_up_settings,
         ignored_exceptions=(NoSuchElementException, ),
@@ -1051,8 +1048,9 @@ def main():
                 accept_rules=False,
             )
             continue
-        chat_to_partner()
+        chat_to_partner(choice_mode=mode)
 
 
 if __name__ == "__main__":
+    driver, solver = set_up_settings_for_webdriver()
     main()
