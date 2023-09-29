@@ -1,100 +1,40 @@
 # kto_me v1.0.5
 import os
-
-from time import sleep
-from writer import create_txt_files
-from string import digits, ascii_letters
 from datetime import datetime, timedelta
+from string import ascii_letters, digits
+from time import sleep
 
-from config_reader import (MY_TG,
-                           EMAIL,
-                           ASK_TG,
-                           MY_AGE,
-                           AI_NAME,
-                           PASSWORD,
-                           SAVE_LOGS,
-                           MY_GENDER,
-                           REDIRECTING,
-                           LAST_MESSAGE,
-                           PARTNERS_AGE,
-                           HIDE_BROWSER,
-                           PARTNERS_GENDER,
-                           CHOOSE_THE_MODE,
-                           AUTO_CHOICE_MODE,
-                           NICK_OF_BOT_CREATOR,
-                           MESSAGES_FOR_REDIRECTING,
-                           NECESSARY_QUANTITY_MESSAGES_TO_SAVE)
+import pyperclip
+from bs4 import BeautifulSoup
+from chromedriver_py import binary_path
+from fake_useragent import UserAgent
+from selenium import webdriver
+from selenium.common.exceptions import (ElementClickInterceptedException,
+                                        ElementNotInteractableException,
+                                        InvalidSessionIdException,
+                                        NoSuchElementException,
+                                        NoSuchWindowException,
+                                        StaleElementReferenceException,
+                                        TimeoutException,
+                                        UnexpectedAlertPresentException,
+                                        WebDriverException)
+from selenium.webdriver import ActionChains
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium_recaptcha_solver import RecaptchaException, RecaptchaSolver
+
+from config_reader import (AI_NAME, ASK_TG, AUTO_CHOICE_MODE, CHOOSE_THE_MODE,
+                           EMAIL, HIDE_BROWSER, LAST_MESSAGE,
+                           MESSAGES_FOR_REDIRECTING, MY_AGE, MY_GENDER, MY_TG,
+                           NECESSARY_QUANTITY_MESSAGES_TO_SAVE,
+                           NICK_OF_BOT_CREATOR, PARTNERS_AGE, PARTNERS_GENDER,
+                           PASSWORD, REDIRECTING, SAVE_LOGS)
+from writer import create_txt_files
 
 LOLZ_LINK = "https://zelenka.guru/members/4245200/"
 GITHUB_LINK = "https://github.com/miha1llumi"
-
-# ffmpeg to complete recaptcha
-try:
-    import ffmpeg_downloader
-except ImportError:
-    os.system("pip install ffmpeg-downloader")
-    os.system("ffdl install --add-path")
-    print(
-        "Пожалуйста, перезапустите скрипт, чтобы соответствующие изменения вступили в силу.\n"
-        "Если у вас появляется надпись, что ffmpeg не найден, то это нормально, спустя время она пропадет.\n"
-        "Надпись не влияет на работоспособность программы(но лучше все равно хотя бы 1 раз перезапустить скрипт).\n"
-    )
-    while True: pass
-finally:
-    create_txt_files()
-
-try:
-    import selenium
-except ImportError:
-    os.system("pip install selenium")
-finally:
-    from selenium import webdriver
-    from selenium.webdriver.chrome.service import Service
-    from selenium.webdriver.chrome.options import Options
-    from selenium.common.exceptions import (ElementNotInteractableException, NoSuchElementException,
-                                            ElementClickInterceptedException, TimeoutException,
-                                            StaleElementReferenceException, UnexpectedAlertPresentException,
-                                            WebDriverException, NoSuchWindowException, InvalidSessionIdException)
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.support import expected_conditions as EC
-    from selenium.webdriver.common.keys import Keys
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver import ActionChains
-
-try:
-    import selenium_recaptcha_solver
-except ImportError:
-    os.system("pip install selenium-recaptcha-solver")
-finally:
-    from selenium_recaptcha_solver import RecaptchaSolver, RecaptchaException
-
-try:
-    import bs4
-except ImportError:
-    os.system("pip install beautifulsoup4")
-finally:
-    from bs4 import BeautifulSoup
-
-try:
-    import pyperclip
-except ImportError:
-    os.system("pip install pyperclip")
-finally:
-    import pyperclip
-
-try:
-    import chromedriver_py
-except ImportError:
-    os.system("pip install chromedriver_py")
-finally:
-    from chromedriver_py import binary_path
-
-try:
-    import fake_useragent
-except ImportError:
-    os.system("pip install fake-useragent")
-finally:
-    from fake_useragent import UserAgent
 
 
 def set_drivers_settings():
@@ -157,6 +97,12 @@ def set_up_settings_for_webdriver():
         else:
             break
     return driver, solver
+
+
+def press_enter_by_driver():
+    ActionChains(driver) \
+        .send_keys(Keys.ENTER) \
+        .perform()
 
 
 def is_captcha():
@@ -286,7 +232,7 @@ def start_chat_to_ai(is_acception=True):
             ignor_exceptions(
                 func=try_to_solve_captcha,
                 is_exit=True,
-                ignored_exceptions=(StaleElementReferenceException, )
+                ignored_exceptions=(StaleElementReferenceException,)
             )
             # при обновлении страницы остается старый email
             # так что мы стираем все символы
@@ -345,10 +291,8 @@ def start_chat_to_ai(is_acception=True):
         search_inp.send_keys(
             AI_NAME + Keys.SPACE + NICK_OF_BOT_CREATOR
         )
-        # enter, чтобы раскрыть панель со списком ai
-        ActionChains(driver) \
-            .send_keys(Keys.ENTER) \
-            .perform()
+        # чтобы раскрыть панель со списком ai
+        press_enter_by_driver()
         sleep(2)
         soup = BeautifulSoup(driver.page_source, "html.parser")
         ais = soup.find_all("div", {"class": "character-row"})
@@ -359,9 +303,7 @@ def start_chat_to_ai(is_acception=True):
             )
             for _ in NICK_OF_BOT_CREATOR:
                 search_inp.send_keys(Keys.BACKSPACE)
-            ActionChains(driver) \
-                .send_keys(Keys.ENTER) \
-                .perform()
+            press_enter_by_driver()
             sleep(2)
         # choice character
         driver.find_element(By.CSS_SELECTOR, "#root > div.apppage > div:nth-child(1) > div > div > div > "
@@ -393,6 +335,10 @@ def request_for_ai(sentence, wait_answer=True):
         _soup = BeautifulSoup(driver.page_source, "html.parser")
         _answers = _soup.find_all("div", {"class": "swiper-no-swiping"})
         return _answers
+
+    def retrieve_ai_message():
+        return find_the_answer_from_ai()[-1].text.split("☆")[0]
+
     try:
         # вводим текст, который собеседник написал нам
         user_input = driver. \
@@ -403,10 +349,8 @@ def request_for_ai(sentence, wait_answer=True):
             clean_time=False
         )
         user_input.send_keys(
-            Keys.CONTROL + "v"
+            Keys.CONTROL + "v" + Keys.ENTER
         )
-        # нажимаем enter, чтобы отправить
-        user_input.send_keys(Keys.ENTER)
     except NoSuchElementException:
         # сайт завис, selenium не может найти элементы
         # ничего не делаем, так как ниже перезаход на сайт
@@ -438,11 +382,11 @@ def request_for_ai(sentence, wait_answer=True):
         # сравниваем изменилось ли за время кол-во символов
         # если да, то ai еще формулирует свою мысль
         sleep(1)
-        new_last_ai_msg = find_the_answer_from_ai()[-1].text.split("☆")[0]
+        new_last_ai_msg = retrieve_ai_message()
         while len(new_last_ai_msg) > len(last_ai_msg):
-            last_ai_msg = find_the_answer_from_ai()[-1].text.split("☆")[0]
+            last_ai_msg = retrieve_ai_message()
             sleep(1)
-            new_last_ai_msg = find_the_answer_from_ai()[-1].text.split("☆")[0]
+            new_last_ai_msg = retrieve_ai_message()
         return last_ai_msg
 
 
@@ -496,6 +440,7 @@ def go_to_character_ai():
             one_time=False
         )
         return check_character_ai_cloudflare_protection()
+
     while True:
         try:
             while go_to_another_site(): pass
@@ -505,7 +450,7 @@ def go_to_character_ai():
             set_up_settings_for_webdriver()
     ignor_exceptions(
         func=start_chat_to_ai,
-        ignored_exceptions=(NoSuchElementException, )
+        ignored_exceptions=(NoSuchElementException,)
     )
 
 
@@ -566,7 +511,7 @@ def start_chat_in_nekto_me(accept_rules=True):
 
 
 def stop_search():
-    driver.\
+    driver. \
         find_element(By.CLASS_NAME, "btn btn-lg btn-stop-search").click()
 
 
@@ -597,6 +542,7 @@ def set_up_settings():
                                                  f"div.row.step_chatbox.main_step > div > div.row.row-search > "
                                                  f"div:nth-child({age_mode}) > div.s-age > button:nth-child({age_fig})"
                                 ).click()
+
     set_up_age(who_is="my")
     set_up_age(who_is="partner")
     start_chat_in_nekto_me()
@@ -644,14 +590,14 @@ def check_to_stop_to_chat():
 def find_next_partner():
     sleep(1)
     if element := ignor_exceptions(
-        func=driver.find_element,
-        is_exit=True,
-        ignored_exceptions=(NoSuchElementException, ),
-        by=By.CSS_SELECTOR,
-        value="body > div.row > div > div.container.chat_container.advState > "
-              "div.chat-box.col-xs-12.col-sm-12.col-md-8.col-lg-6 > "
-              "div.row.step_chatbox.chat_step > div > div.status-end.navinfo.talk_over.nst "
-              "> div > button:nth-child(5)"
+            func=driver.find_element,
+            is_exit=True,
+            ignored_exceptions=(NoSuchElementException,),
+            by=By.CSS_SELECTOR,
+            value="body > div.row > div > div.container.chat_container.advState > "
+                  "div.chat-box.col-xs-12.col-sm-12.col-md-8.col-lg-6 > "
+                  "div.row.step_chatbox.chat_step > div > div.status-end.navinfo.talk_over.nst "
+                  "> div > button:nth-child(5)"
     ):
         try:
             element.click()
@@ -700,9 +646,7 @@ def answer_msgs_by_myself(phrases, answers, fill_in_all_answers=False):
                 text_input.send_keys(Keys.ENTER)
             except StaleElementReferenceException:
                 # если элемент не найден
-                ActionChains(driver) \
-                    .send_keys(Keys.ENTER) \
-                    .perform()
+                press_enter_by_driver()
             answers[phs] = answer
 
 
@@ -790,6 +734,7 @@ def write_the_last_message(last_message, *, answers, phrases):
     def write_in_db(_text):
         with open("bd_of_nicks.txt", "a", encoding="utf-8") as _f:
             _f.write(_text + "\n")
+
     nickname = ""
     another_text = ""
     text_input = driver.find_element(By.CLASS_NAME, "emojionearea-editor")
@@ -870,6 +815,7 @@ def fake_typing(time):
                 )
             except ElementClickInterceptedException:
                 pass
+
     # время когда завершится печать
     time_to_over = datetime.now() + timedelta(seconds=time)
     start_time = datetime.now()
@@ -905,6 +851,7 @@ def saving_logs(title_of_folder):
             _number += 1
         driver.save_screenshot(full_path)
         return title_of_folder
+
     # если есть имя папки
     if title_of_folder:
         save_screen()
@@ -926,12 +873,13 @@ def clean_chat_with_ai(window_with_character_ai):
         driver.find_element(By.CSS_SELECTOR, "#root > div.apppage > div.chat2 > div:nth-child(1) > "
                                              "div:nth-child(1) > div:nth-child(3) > div > div > span > svg"
                             ).click()
+
     # переключаемся на окно с character ai
     driver.switch_to.window(window_name=window_with_character_ai)
     ignor_exceptions(
         func=open_chat_settings,
         is_exit=False,
-        ignored_exceptions=(NoSuchElementException, ),
+        ignored_exceptions=(NoSuchElementException,),
     )
     sleep(1)
     try:
@@ -1044,10 +992,11 @@ def chat_to_partner(choice_mode):
 
 
 def main():
+    create_txt_files()
     mode = choose_mode_for_bot()
     ignor_exceptions(
         func=set_up_settings,
-        ignored_exceptions=(NoSuchElementException, ),
+        ignored_exceptions=(NoSuchElementException,),
     )
     # the main logic
     while True:
