@@ -345,10 +345,24 @@ def start_chat_to_ai(is_acception=True):
         search_inp.send_keys(
             AI_NAME + Keys.SPACE + NICK_OF_BOT_CREATOR
         )
-        driver.find_element(By.CSS_SELECTOR, "#root > div.apppage > div:nth-child(1) > div > div > div > "
-                                             "div.d-flex.fixed-top.p-2 > div.d-flex.col.align-items.center > "
-                                             "div > button").click()
+        # enter, чтобы раскрыть панель со списком ai
+        ActionChains(driver) \
+            .send_keys(Keys.ENTER) \
+            .perform()
         sleep(2)
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        ais = soup.find_all("div", {"class": "character-row"})
+        # значит списка ai нет совсем
+        if not ais:
+            print(
+                "Поиск не находит ai. Мы вынуждены убрать ник автора!"
+            )
+            for _ in NICK_OF_BOT_CREATOR:
+                search_inp.send_keys(Keys.BACKSPACE)
+            ActionChains(driver) \
+                .send_keys(Keys.ENTER) \
+                .perform()
+            sleep(2)
         # choice character
         driver.find_element(By.CSS_SELECTOR, "#root > div.apppage > div:nth-child(1) > div > div > div > "
                                              "div.container-fluid.p-0 > div > div > div:nth-child(1) > div > a > div > "
