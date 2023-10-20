@@ -4,18 +4,18 @@ LOLZ_LINK = "https://zelenka.guru/members/4245200/"
 
 
 def create_txt_files():
-    if not os.path.exists(file := "./useless_phrases.txt"):
+    if not os.path.exists(file := "settings/useless_phrases.txt"):
         with open(file, "a") as f:
             f.write(
                 "пх" + "\n" + "ааа" + "\n"
             )
-    if not os.path.exists(file := "./bd_of_nicks.txt"):
+    if not os.path.exists(file := "settings/db_of_nicks.txt"):
         with open(file, "a") as f:
             pass
-    if not os.path.exists("./qst_ans.txt"):
+    if not os.path.exists("settings/qst_ans.txt"):
         with open(file, "a") as f:
             f.write(f"Какой лолз у создателя?  |  {LOLZ_LINK}" + "\n")
-    if not os.path.exists(file := "./kto_settings.txt"):
+    if not os.path.exists(file := "settings/kto_settings.txt"):
         print(
             "У вас отсутствует(или перемещен, верните его!) файл {}!\n"
             "Файл используется для установки нужных параметров, {}\n"
@@ -49,3 +49,11 @@ def create_txt_files():
             f.write("hide=False" + "\n")
             f.write("if_ask_tg=False" + "\n")
             f.write("my_tg=None" + "\n")
+
+
+def create_folders():
+    if not os.path.isdir('logs'):
+        os.mkdir("logs")
+
+    if not os.path.isdir('settings'):
+        os.mkdir("settings")

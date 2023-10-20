@@ -1,5 +1,7 @@
+SETTINGS_FOLDER = "settings"
+
 # set up the variables from kto_settings.txt
-for text in open("./kto_settings.txt", encoding='utf-8').readlines():
+for text in open(f"{SETTINGS_FOLDER}/kto_settings.txt", encoding='utf-8').readlines():
     try:
         key, value = text.strip().split("=")
     except ValueError:

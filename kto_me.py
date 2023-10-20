@@ -31,10 +31,13 @@ from config_reader import (AI_NAME, ASK_TG, AUTO_CHOICE_MODE, CHOOSE_THE_MODE,
                            NECESSARY_QUANTITY_MESSAGES_TO_SAVE,
                            NICK_OF_BOT_CREATOR, PARTNERS_AGE, PARTNERS_GENDER,
                            PASSWORD, REDIRECTING, SAVE_LOGS)
-from writer import create_txt_files
+from writer import create_txt_files, create_folders
 
 LOLZ_LINK = "https://zelenka.guru/members/4245200/"
 GITHUB_LINK = "https://github.com/miha1llumi"
+
+SETTINGS_FOLDER = "settings"
+LOGS_FOLDER = "logs"
 
 
 def set_drivers_settings():
@@ -401,7 +404,7 @@ def print_all_information():
 
 def change_settings():
     settings = {}
-    for _text in open(file := "kto_settings.txt", encoding='utf-8').readlines():
+    for _text in open(file := f"{SETTINGS_FOLDER}/kto_settings.txt", encoding='utf-8').readlines():
         _text = _text.strip()
         key, value = _text.split("=")
         change_or_not = input(
@@ -414,7 +417,7 @@ def change_settings():
             )
         settings[key] = value
     # удаляем прошлый файл
-    os.remove(os.getcwd() + "/" + file)
+    os.remove(f"{os.getcwd()}/{SETTINGS_FOLDER}/{file}")
     # записать значения
     with open(file, "a", encoding='utf-8') as _file:
         for k, vl in settings.items():
@@ -669,7 +672,7 @@ def close_current_chat(by_myself=False):
 
 
 def check_unuseless_phrase(phrase):
-    with open("useless_phrases.txt", "r") as _f:
+    with open(f"{SETTINGS_FOLDER}/useless_phrases.txt", "r") as _f:
         for word in _f.readlines():
             if phrase.upper() == word.upper().strip("\n"):
                 return word
@@ -678,14 +681,15 @@ def check_unuseless_phrase(phrase):
 def exist_qst_in_bd(question):
     if not isinstance(question, str):
         return False
-    with open("qst_ans.txt", "r") as _f:
+
+    with open(f"{SETTINGS_FOLDER}/qst_ans.txt", "r") as _f:
         for qst in _f.readlines():
             if question.upper() == (qst := qst.split("|"))[0].upper():
                 return qst[-1]
 
 
 def write_dialog(answers):
-    with open("qst_ans.txt", "a") as _f:
+    with open(f"{SETTINGS_FOLDER}/qst_ans.txt", "a") as _f:
         for qst, ans in answers.items():
             if not exist_qst_in_bd(qst):
                 _f.write(f"{qst}  |  {ans}" + "\n")
@@ -732,7 +736,7 @@ def correct_typing(*, func, keys, time):
 
 def write_the_last_message(last_message, *, answers, phrases):
     def write_in_db(_text):
-        with open("bd_of_nicks.txt", "a", encoding="utf-8") as _f:
+        with open(f"{SETTINGS_FOLDER}/db_of_nicks.txt", "a", encoding="utf-8") as _f:
             _f.write(_text + "\n")
 
     nickname = ""
@@ -847,7 +851,7 @@ def saving_logs(title_of_folder):
         # ищем подходящее имя(по порядку)
         # для нашего скриншота
         _number = 1
-        while os.path.exists(full_path := os.getcwd() + "/" + title_of_folder + "/" + f"shot{_number}.png"):
+        while os.path.exists(full_path := f"{os.getcwd()}/{LOGS_FOLDER}/{title_of_folder}/shot{_number}.png"):
             _number += 1
         driver.save_screenshot(full_path)
         return title_of_folder
@@ -857,12 +861,12 @@ def saving_logs(title_of_folder):
         save_screen()
         return title_of_folder
     number = 1
-    title_of_folder = f"folder{number}"
+    title_of_folder = f"{LOGS_FOLDER}/folder{number}"
     # ищем подходящее имя(по порядку)
     # для нашей папки
     while os.path.isdir(title_of_folder):
         number += 1
-        title_of_folder = f"folder{number}"
+        title_of_folder = f"{LOGS_FOLDER}/folder{number}"
     os.mkdir(title_of_folder)
     save_screen()
     return title_of_folder
@@ -992,6 +996,7 @@ def chat_to_partner(choice_mode):
 
 
 def main():
+    create_folders()
     create_txt_files()
     mode = choose_mode_for_bot()
     ignor_exceptions(
