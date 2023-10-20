@@ -1,21 +1,30 @@
 import os
+from kto_me import SETTINGS_FOLDER, LOGS_FOLDER
 
 LOLZ_LINK = "https://zelenka.guru/members/4245200/"
 
+ALL_TXT_FILES = (
+    "useless_phrases.txt",
+    "kto_settings.txt",
+    "db_of_nicks.txt",
+    "qst_ans.txt",
+)
 
-def create_txt_files():
-    if not os.path.exists(file := "settings/useless_phrases.txt"):
+
+def create_txt_files(path_to_folders=None):
+    path_to_folders = path_to_folders if path_to_folders else ""
+
+    if not os.path.exists(file := f"{path_to_folders}/{SETTINGS_FOLDER}/useless_phrases.txt"):
         with open(file, "a") as f:
             f.write(
                 "пх" + "\n" + "ааа" + "\n"
             )
-    if not os.path.exists(file := "settings/db_of_nicks.txt"):
-        with open(file, "a") as f:
-            pass
-    if not os.path.exists("settings/qst_ans.txt"):
+    if not os.path.exists(file := f"{path_to_folders}/{SETTINGS_FOLDER}/db_of_nicks.txt"):
+        with open(file, "a"): pass
+    if not os.path.exists(file := f"{path_to_folders}/{SETTINGS_FOLDER}/qst_ans.txt"):
         with open(file, "a") as f:
             f.write(f"Какой лолз у создателя?  |  {LOLZ_LINK}" + "\n")
-    if not os.path.exists(file := "settings/kto_settings.txt"):
+    if not os.path.exists(file := f"{path_to_folders}/{SETTINGS_FOLDER}/kto_settings.txt"):
         print(
             "У вас отсутствует(или перемещен, верните его!) файл {}!\n"
             "Файл используется для установки нужных параметров, {}\n"
@@ -51,9 +60,11 @@ def create_txt_files():
             f.write("my_tg=None" + "\n")
 
 
-def create_folders():
-    if not os.path.isdir('logs'):
-        os.mkdir("logs")
+def create_folders(path_to_folders=None):
+    path_to_folders = path_to_folders if path_to_folders else ""
 
-    if not os.path.isdir('settings'):
-        os.mkdir("settings")
+    if not os.path.isdir(path := f'{path_to_folders}/{LOGS_FOLDER}'):
+        os.mkdir(path)
+
+    if not os.path.isdir(path := f'{path_to_folders}/{SETTINGS_FOLDER}'):
+        os.mkdir(path)

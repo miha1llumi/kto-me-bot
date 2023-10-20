@@ -1,6 +1,28 @@
 SETTINGS_FOLDER = "settings"
 
-# set up the variables from kto_settings.txt
+all_vars = (
+    "AI_NAME",
+    "EMAIL",
+    "PASSWORD",
+    "AUTO_CHOICE_MODE",
+    "CHOOSE_THE_MODE",
+    "NICK_OF_BOT_CREATOR",
+    "SAVE_LOGS",
+    "NECESSARY_QUANTITY_MESSAGES_TO_SAVE",
+    "REDIRECTING",
+    "LAST_MESSAGE",
+    "MESSAGES_FOR_REDIRECTING",
+    "MY_GENDER",
+    "PARTNERS_GENDER",
+    "MY_AGE",
+    "PARTNERS_AGE",
+    "HIDE_BROWSER",
+    "ASK_TG",
+    "MY_TG"
+)
+
+
+# set up vars from kto settings file
 for text in open(f"{SETTINGS_FOLDER}/kto_settings.txt", encoding='utf-8').readlines():
     try:
         key, value = text.strip().split("=")

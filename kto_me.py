@@ -25,13 +25,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium_recaptcha_solver import RecaptchaException, RecaptchaSolver
 
-from config_reader import (AI_NAME, ASK_TG, AUTO_CHOICE_MODE, CHOOSE_THE_MODE,
-                           EMAIL, HIDE_BROWSER, LAST_MESSAGE,
-                           MESSAGES_FOR_REDIRECTING, MY_AGE, MY_GENDER, MY_TG,
-                           NECESSARY_QUANTITY_MESSAGES_TO_SAVE,
-                           NICK_OF_BOT_CREATOR, PARTNERS_AGE, PARTNERS_GENDER,
-                           PASSWORD, REDIRECTING, SAVE_LOGS)
-from writer import create_txt_files, create_folders
+if __name__ == "__main__":
+    from config_reader import (AI_NAME, ASK_TG, AUTO_CHOICE_MODE, CHOOSE_THE_MODE,
+                               EMAIL, HIDE_BROWSER, LAST_MESSAGE,
+                               MESSAGES_FOR_REDIRECTING, MY_AGE, MY_GENDER, MY_TG,
+                               NECESSARY_QUANTITY_MESSAGES_TO_SAVE,
+                               NICK_OF_BOT_CREATOR, PARTNERS_AGE, PARTNERS_GENDER,
+                               PASSWORD, REDIRECTING, SAVE_LOGS)
+    from writer import create_txt_files, create_folders
 
 LOLZ_LINK = "https://zelenka.guru/members/4245200/"
 GITHUB_LINK = "https://github.com/miha1llumi"
@@ -928,7 +929,7 @@ def chat_to_partner(choice_mode):
     folder_name_to_save_logs = None
     start_time = datetime.now()
     partners_phrases = set()
-    answers = dict()
+    answers = {}
     while True:
         if check_to_stop_to_chat():
             print_dialog_is_over()
