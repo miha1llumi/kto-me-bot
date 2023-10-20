@@ -7,7 +7,7 @@ How to download?
 
 ```console
 $ git clone https://github.com/miha1llumi/kto-me-bot.git
-$ cd kto_me_bot
+$ cd kto-me-bot
 $ python kto_me.py
 ```
 
