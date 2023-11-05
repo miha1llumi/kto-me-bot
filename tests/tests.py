@@ -1,7 +1,8 @@
 import os
 import unittest
-from kto_me import SETTINGS_FOLDER, LOGS_FOLDER
-from writer import create_folders, create_txt_files, ALL_TXT_FILES
+
+from kto_me import LOGS_FOLDER, SETTINGS_FOLDER
+from writer import ALL_TXT_FILES, create_folders, create_txt_files
 
 PATH_TO_TEST_FOLDER = f"{os.getcwd()}/test_folder"
 
